@@ -117,7 +117,7 @@ namespace Chess.Managers
             blackPieces.AddChild(new Queen(pieceTextures[Tuple.Create(PieceType.Queen, Team.Black)], Team.Black, board.GetTile(4, 0)));
             blackPieces.AddChild(new Rook(pieceTextures[Tuple.Create(PieceType.Rook, Team.Black)], Team.Black, board.GetTile(0, 0)));
             blackPieces.AddChild(new Rook(pieceTextures[Tuple.Create(PieceType.Rook, Team.Black)], Team.Black, board.GetTile(7, 0)));
-            blackKing = new King(pieceTextures[Tuple.Create(PieceType.King, Team.Black)], Team.Black, board.GetTile(3, 0));
+            blackKing = new King(pieceTextures[Tuple.Create(PieceType.King, Team.Black)], Team.Black, board.GetTile(3, 0), blackKing);
             blackPieces.AddChild(blackKing);
 
             // White

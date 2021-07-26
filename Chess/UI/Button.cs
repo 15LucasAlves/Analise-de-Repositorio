@@ -5,7 +5,7 @@ using Microsoft.Xna.Framework.Graphics;
 namespace Chess.UI
 {
     // Buttons to interact with menus.
-    class Button : ClickableObject
+    class Button : ClickableSprite
     {
         private StringObject text;
 

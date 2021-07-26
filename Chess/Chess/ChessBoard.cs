@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Chess
 {
-    class ChessBoard : GameObject, Interfaces.IUpdatable
+    class ChessBoard : GameObject
     {
         public int BoardDimension => 8;
 

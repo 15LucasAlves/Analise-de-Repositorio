@@ -6,7 +6,7 @@ using Chess.Pieces;
 namespace Chess 
 {
     // Chess board tile
-    class Tile : ClickableObject
+    class Tile : ClickableSprite
     {
         private Point coordinate;
         public Point Coordinate
