@@ -16,7 +16,7 @@ namespace Chess.Pieces
 
         public Action<Piece> OnKingChecked;
 
-        public King(Texture2D sprite, Team team, Tile position, King king) : base(sprite, team, position, king)
+        public King(Texture2D sprite, Team team, Tile position) : base(sprite, team, position)
         {
         }
 

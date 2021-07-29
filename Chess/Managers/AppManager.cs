@@ -19,15 +19,29 @@ namespace Chess.Managers
                 appState = value;
             }
         }
-        
+        public static MouseState MouseState { get; set; }
+        public static MouseState PreviousMouseState { get; set; }
 
         public static KeyboardState KeyboardState { get; set; }
         public static KeyboardState PreviousKeyboardState { get; set; }
 
         public static bool DebugMode { get; private set; } = false;
 
+
+        public static bool LeftMouseDown => MouseState.LeftButton == ButtonState.Pressed && PreviousMouseState.LeftButton == ButtonState.Released;
+        public static bool LeftMouseUp => MouseState.LeftButton == ButtonState.Released && PreviousMouseState.LeftButton == ButtonState.Pressed;
+        public static bool LeftMouseHold => MouseState.LeftButton == ButtonState.Pressed;
+
+        public static bool RightMouseDown => MouseState.RightButton == ButtonState.Pressed && PreviousMouseState.RightButton == ButtonState.Released;
+        public static bool RightMouseUp => MouseState.RightButton == ButtonState.Released && PreviousMouseState.RightButton == ButtonState.Pressed;
+        public static bool RightMouseHold => MouseState.RightButton == ButtonState.Pressed;
+
+
         public static void UpdateInputStates()
         {
+            PreviousMouseState = MouseState;
+            MouseState = Mouse.GetState();
+
             PreviousKeyboardState = KeyboardState;
             KeyboardState = Keyboard.GetState();
         }

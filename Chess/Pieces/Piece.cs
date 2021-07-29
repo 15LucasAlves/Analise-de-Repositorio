@@ -6,19 +6,17 @@ public enum PieceType { King, Queen, Rook, Knight, Bishop, Pawn }
 
 namespace Chess.Pieces
 {
-    abstract class Piece : ClickableSprite
+    abstract class Piece : ClickableObject
     {
         public Tile TilePosition { get; set; }
         public Team Team { get; private set; }
         public bool Unmoved { get; private set; }
-        public King King { get; private set; }
 
-        public Piece (Texture2D sprite, Team team, Tile position, King king) : base(sprite, position.Rectangle)
+        public Piece (Texture2D sprite, Team team, Tile position) : base(sprite, position.Rectangle)
         {
             this.TilePosition = position;
             this.TilePosition.Piece = this;
             this.Team = team;
-            this.King = king;
             Unmoved = true;
         }
 
@@ -41,7 +39,7 @@ namespace Chess.Pieces
         }
 
         #region Helper Methods
-        protected virtual bool IsPossibleMove(TileBoard board, Tile tile)
+        protected virtual bool IsPossibleMove(Tile tile)
         {
             if (tile != null)
             {
@@ -52,12 +50,7 @@ namespace Chess.Pieces
                     if (tile.Piece != this)
                     {
                         if (ContainsDifferentTeamPiece(tile))
-                        {
-                            if (!King.InCheck(board))
-                            {
-                                return true;
-                            }
-                        }
+                            return true;
                     }
                 }
             }

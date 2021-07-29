@@ -3,17 +3,10 @@ using System.Collections.Generic;
 
 namespace Chess.Pieces
 {
-    class Bishop : Piece
+    class Rook : Piece
     {
-        private Texture2D texture2D;
-        private Team black;
-        private Tile tile;
-
-        public Bishop(Texture2D texture2D, Team black, Tile tile)
+        public Rook(Texture2D sprite, Team team, Tile position) : base(sprite, team, position)
         {
-            this.texture2D = texture2D;
-            this.black = black;
-            this.tile = tile;
         }
 
         public override IEnumerable<Tile> GetPossibleMoves(TileBoard board)
@@ -21,13 +14,10 @@ namespace Chess.Pieces
             List<Tile> possibleMoves = new List<Tile>();
             Tile tileBeingChecked;
 
-            // Check top-right
-            for (int i = TilePosition.Coordinate.X, j = TilePosition.Coordinate.Y;
-                 i < board.Tiles.GetLength(0) && j < board.Tiles.GetLength(1);
-                 i++, j++)
+            // Check right
+            for (int i = TilePosition.Coordinate.X; i < board.Tiles.GetLength(0); i++)
             {
-
-                tileBeingChecked = board[i, j];
+                tileBeingChecked = board[i, TilePosition.Coordinate.Y];
 
                 if (IsPossibleMove(tileBeingChecked))
                     possibleMoves.Add(tileBeingChecked);
@@ -35,12 +25,10 @@ namespace Chess.Pieces
                 if (tileBeingChecked.Piece != null && tileBeingChecked.Piece != this)
                     break;
             }
-            // Check top-left
-            for (int i = TilePosition.Coordinate.X, j = TilePosition.Coordinate.Y;
-                 i >= 0 && j < board.Tiles.GetLength(1);
-                 i--, j++)
+            // Check left
+            for (int i = TilePosition.Coordinate.X; i >= 0; i--)
             {
-                tileBeingChecked = board[i, j];
+                tileBeingChecked = board[i, TilePosition.Coordinate.Y];
 
                 if (IsPossibleMove(tileBeingChecked))
                     possibleMoves.Add(tileBeingChecked);
@@ -48,12 +36,10 @@ namespace Chess.Pieces
                 if (tileBeingChecked.Piece != null && tileBeingChecked.Piece != this)
                     break;
             }
-            // Check bottom-right
-            for (int i = TilePosition.Coordinate.X, j = TilePosition.Coordinate.Y;
-                 i < board.Tiles.GetLength(0) && j >= 0;
-                 i++, j--)
+            // Check above
+            for (int i = TilePosition.Coordinate.Y; i < board.Tiles.GetLength(1); i++)
             {
-                tileBeingChecked = board[i, j];
+                tileBeingChecked = board[TilePosition.Coordinate.X, i];
 
                 if (IsPossibleMove(tileBeingChecked))
                     possibleMoves.Add(tileBeingChecked);
@@ -61,12 +47,10 @@ namespace Chess.Pieces
                 if (tileBeingChecked.Piece != null && tileBeingChecked.Piece != this)
                     break;
             }
-            // Check bottom-left
-            for (int i = TilePosition.Coordinate.X, j = TilePosition.Coordinate.Y;
-                 i >= 0 && j >= 0;
-                 i--, j--)
+            // Check below
+            for (int i = TilePosition.Coordinate.Y; i >= 0; i--)
             {
-                tileBeingChecked = board[i, j];
+                tileBeingChecked = board[TilePosition.Coordinate.X, i];
 
                 if (IsPossibleMove(tileBeingChecked))
                     possibleMoves.Add(tileBeingChecked);

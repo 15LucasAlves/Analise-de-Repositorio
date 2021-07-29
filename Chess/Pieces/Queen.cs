@@ -5,6 +5,10 @@ namespace Chess.Pieces
 {
     class Queen : Piece
     {
+        public Queen(Texture2D sprite, Team team, Tile position) : base(sprite, team, position)
+        {
+        }
+
         public override IEnumerable<Tile> GetPossibleMoves(TileBoard board)
         {
             List<Tile> possibleMoves = new List<Tile>();
