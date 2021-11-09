@@ -1,232 +1,226 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
-using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
+using MonoGameEngine;
 
-using Chess.Pieces;
-
-namespace Chess.Managers
+namespace Chess
 {
-    public enum PlayerState { Selecting, Moving }
-
-    class GameManager
+    class GameManager : DrawableAppObject
     {
-        private readonly Color SelectedTint = Color.LightSkyBlue;
-        private readonly Color PossibleMoveTint = Color.Yellow;
-        private readonly Color CheckingPieceTint = Color.Red;
+        // Tileboards
+        private TileBoard _tileBoard;
 
-        private ChessBoard board;
-        private Dictionary<Tuple<PieceType, Team>, Texture2D> pieceTextures;
-        private ObjectContainer pieces;
-        private ObjectContainer whitePieces;
-        private ObjectContainer blackPieces;
-        private List<Move> moves;
+        // Private Events
+        private event Action<Piece> OnPieceSelected;
+        private event Action OnPieceDeselected;
+        private event Action<Piece, Tile> OnMoveSelected;
+        private event Action<IEnumerable<Piece>> OnKingChecked;
 
-        // In-game logic
-        private Piece selectedPiece;
-        private Tile selectedPieceTile;
-        private List<Tile> selectedPiecePossibleMoves;
-        
-        private TileBoard checkVerificationBoard;
+        // Pieces
+        private HashSet<Piece> _pieces = new HashSet<Piece>();
+        private HashSet<Piece> _whitePieces = new HashSet<Piece>();
+        private HashSet<Piece> _blackPieces = new HashSet<Piece>();
 
-        private King whiteKing;
-        private King blackKing;
+        private King _whiteKing;
+        private King _blackKing;
 
-        // Properties
-        private Team playerTurn;
-        public Team PlayerTurn
+        // Selected Piece Logic
+        private Piece _selectedPiece;
+        private IEnumerable<Tile> _selectedPiecePossibleMoves;
+
+        // Move Logic
+        private MoveManager _moveManager = new MoveManager();
+
+        // Colors
+        private Color _selectedPieceTint = Color.LightSkyBlue;
+        private Color _selectedPiecePossibleMovesTint = Color.Yellow;
+        private Color _checkingPieceTint = Color.Red;
+
+        // Player State
+        private enum PlayerState { SelectingPiece, MovingPiece, FinishedGame }
+        private PlayerState _playerState;
+
+        // Turn
+        public Team PlayerTurn { get; private set; }
+        public int TurnsTaken { get; private set; }
+
+        // Public Events
+        public Action<Team> OnPlayerTurnChange;
+        public event Action OnGameStart;
+        public event Action<Team?> OnGameFinished;
+
+        public GameManager(TileBoard tileBoard)
         {
-            get => playerTurn;
-            private set
-            {
-                playerTurn = value;
-                OnPlayerTurnChange?.Invoke();
-            }
-        }
-        public PlayerState PlayerState { get; private set; }
-        public int TurnCount { get; private set; }
+            _tileBoard = tileBoard;
 
-        // Events
-        public Action<Piece> OnPieceSelected;
-        public Action OnPieceDeselected;
-        public Action OnPlayerTurnChange;
-
-        public Action<Team?> OnGameFinished;
-
-        public GameManager(ChessBoard board, Dictionary<Tuple<PieceType, Team>, Texture2D> pieceTextures)
-        {
-            this.board = board;
-            this.pieceTextures = pieceTextures;
-
-            pieces = new ObjectContainer();
-            whitePieces = new ObjectContainer();
-            blackPieces = new ObjectContainer();
-            whitePieces.Active(true);
-            blackPieces.Active(true);
-            pieces.AddChild(whitePieces, blackPieces);
-
-            moves = new List<Move>();
-
-            checkVerificationBoard = new TileBoard(board.BoardDimension, board.BoardDimension);
-
+            // Events
             OnPieceSelected = piece =>
             {
-                selectedPiece = piece;
-                selectedPieceTile = piece.TilePosition;
-                selectedPiecePossibleMoves = selectedPiece.GetPossibleMoves(board.TileBoard).ToList();
+                // Set selected piece pointer
+                _selectedPiece = piece;
+                // Get its possible moves
+                _selectedPiecePossibleMoves = GetFilteredPossibleMoves(_selectedPiece);
 
-                selectedPieceTile.DrawColor = SelectedTint;
-                
-                selectedPiecePossibleMoves.ForEach(tile => tile.DrawColor = PossibleMoveTint);
-                
-                PlayerState = PlayerState.Moving;
+                // Tint everything properly
+                _selectedPiece.TilePosition.Tint = _selectedPieceTint;
+                foreach (Tile tile in _selectedPiecePossibleMoves)
+                {
+                    tile.Tint = _selectedPiecePossibleMovesTint;
+                }
+
+                // Update Player State
+                _playerState = PlayerState.MovingPiece;
             };
 
             OnPieceDeselected = () =>
             {
-                selectedPieceTile.DrawColor = Color.White;
-                selectedPiecePossibleMoves.ForEach(tile => tile.DrawColor = Color.White);
-                selectedPiecePossibleMoves = FilterMovesThatWouldPutInCheck(selectedPiece, selectedPiecePossibleMoves).ToList();
-                selectedPiece = null;
-                selectedPieceTile = null;
-                selectedPiecePossibleMoves.Clear();
+                // Clear tints
+                _selectedPiece.TilePosition.Tint = Color.White;
+                foreach (Tile tile in _selectedPiecePossibleMoves)
+                {
+                    tile.Tint = Color.White;
+                }
 
-                PlayerState = PlayerState.Selecting;
+                // Clear selected piece pointer and its possible moves
+                _selectedPiece = null;
+                _selectedPiecePossibleMoves = null;
+
+                // Update Player State
+                _playerState = PlayerState.SelectingPiece;
             };
+
+            OnMoveSelected = (piece, tile) =>
+            {
+                if (_playerState == PlayerState.MovingPiece)
+                {
+                    if (_selectedPiecePossibleMoves.Contains(tile))
+                    {
+                        OnPieceDeselected?.Invoke();
+
+                        MovePieceTo(piece, tile);
+
+                        TogglePlayerTurn();
+
+                        _tileBoard.ClearTilesTint();
+
+                        CheckGameFinish();
+                    }
+                }
+            };
+
+            OnKingChecked += checkingPieces =>
+            {
+                foreach (Piece checkingPiece in checkingPieces)
+                {
+                    checkingPiece.TilePosition.Tint = _checkingPieceTint;
+                }
+            };
+
+            _tileBoard.ApplyFunctionToAllTiles((tile) =>
+            {
+                tile.OnLeftMouseUp += () =>
+                {
+                    if (_playerState == PlayerState.MovingPiece)
+                    {
+                        OnMoveSelected?.Invoke(_selectedPiece, tile);
+                    }
+                };
+            });
         }
 
-        // Traditional piece set up
-        public void CreateNewDefaultGame()
+        // Helper function
+        private bool ContainsPieceOfType<T>(IEnumerable<Piece> pieces) where T : Piece
         {
-            ClearBoard();
-
-            // Black
-            blackPieces.AddChild(new Bishop(pieceTextures[Tuple.Create(PieceType.Bishop, Team.Black)], Team.Black, board.GetTile(2, 0)));
-            blackPieces.AddChild(new Bishop(pieceTextures[Tuple.Create(PieceType.Bishop, Team.Black)], Team.Black, board.GetTile(5, 0)));
-            blackPieces.AddChild(new Knight(pieceTextures[Tuple.Create(PieceType.Knight, Team.Black)], Team.Black, board.GetTile(1, 0)));
-            blackPieces.AddChild(new Knight(pieceTextures[Tuple.Create(PieceType.Knight, Team.Black)], Team.Black, board.GetTile(6, 0)));
-            blackPieces.AddChild(new Pawn(pieceTextures[Tuple.Create(PieceType.Pawn, Team.Black)], Team.Black, board.GetTile(0, 1)));
-            blackPieces.AddChild(new Pawn(pieceTextures[Tuple.Create(PieceType.Pawn, Team.Black)], Team.Black, board.GetTile(1, 1)));
-            blackPieces.AddChild(new Pawn(pieceTextures[Tuple.Create(PieceType.Pawn, Team.Black)], Team.Black, board.GetTile(2, 1)));
-            blackPieces.AddChild(new Pawn(pieceTextures[Tuple.Create(PieceType.Pawn, Team.Black)], Team.Black, board.GetTile(3, 1)));
-            blackPieces.AddChild(new Pawn(pieceTextures[Tuple.Create(PieceType.Pawn, Team.Black)], Team.Black, board.GetTile(4, 1)));
-            blackPieces.AddChild(new Pawn(pieceTextures[Tuple.Create(PieceType.Pawn, Team.Black)], Team.Black, board.GetTile(5, 1)));
-            blackPieces.AddChild(new Pawn(pieceTextures[Tuple.Create(PieceType.Pawn, Team.Black)], Team.Black, board.GetTile(6, 1)));
-            blackPieces.AddChild(new Pawn(pieceTextures[Tuple.Create(PieceType.Pawn, Team.Black)], Team.Black, board.GetTile(7, 1)));
-            blackPieces.AddChild(new Queen(pieceTextures[Tuple.Create(PieceType.Queen, Team.Black)], Team.Black, board.GetTile(4, 0)));
-            blackPieces.AddChild(new Rook(pieceTextures[Tuple.Create(PieceType.Rook, Team.Black)], Team.Black, board.GetTile(0, 0)));
-            blackPieces.AddChild(new Rook(pieceTextures[Tuple.Create(PieceType.Rook, Team.Black)], Team.Black, board.GetTile(7, 0)));
-            blackKing = new King(pieceTextures[Tuple.Create(PieceType.King, Team.Black)], Team.Black, board.GetTile(3, 0));
-            blackPieces.AddChild(blackKing);
-
-            // White
-            whitePieces.AddChild(new Bishop(pieceTextures[Tuple.Create(PieceType.Bishop, Team.White)], Team.White, board.GetTile(2, 7)));
-            whitePieces.AddChild(new Bishop(pieceTextures[Tuple.Create(PieceType.Bishop, Team.White)], Team.White, board.GetTile(5, 7)));
-            whitePieces.AddChild(new Knight(pieceTextures[Tuple.Create(PieceType.Knight, Team.White)], Team.White, board.GetTile(1, 7)));
-            whitePieces.AddChild(new Knight(pieceTextures[Tuple.Create(PieceType.Knight, Team.White)], Team.White, board.GetTile(6, 7)));
-            whitePieces.AddChild(new Pawn(pieceTextures[Tuple.Create(PieceType.Pawn, Team.White)], Team.White, board.GetTile(0, 6)));
-            whitePieces.AddChild(new Pawn(pieceTextures[Tuple.Create(PieceType.Pawn, Team.White)], Team.White, board.GetTile(1, 6)));
-            whitePieces.AddChild(new Pawn(pieceTextures[Tuple.Create(PieceType.Pawn, Team.White)], Team.White, board.GetTile(2, 6)));
-            whitePieces.AddChild(new Pawn(pieceTextures[Tuple.Create(PieceType.Pawn, Team.White)], Team.White, board.GetTile(3, 6)));
-            whitePieces.AddChild(new Pawn(pieceTextures[Tuple.Create(PieceType.Pawn, Team.White)], Team.White, board.GetTile(4, 6)));
-            whitePieces.AddChild(new Pawn(pieceTextures[Tuple.Create(PieceType.Pawn, Team.White)], Team.White, board.GetTile(5, 6)));
-            whitePieces.AddChild(new Pawn(pieceTextures[Tuple.Create(PieceType.Pawn, Team.White)], Team.White, board.GetTile(6, 6)));
-            whitePieces.AddChild(new Pawn(pieceTextures[Tuple.Create(PieceType.Pawn, Team.White)], Team.White, board.GetTile(7, 6)));
-            whitePieces.AddChild(new Queen(pieceTextures[Tuple.Create(PieceType.Queen, Team.White)], Team.White, board.GetTile(4, 7)));
-            whitePieces.AddChild(new Rook(pieceTextures[Tuple.Create(PieceType.Rook, Team.White)], Team.White, board.GetTile(0, 7)));
-            whitePieces.AddChild(new Rook(pieceTextures[Tuple.Create(PieceType.Rook, Team.White)], Team.White, board.GetTile(7, 7)));
-            whiteKing = new King(pieceTextures[Tuple.Create(PieceType.King, Team.White)], Team.White, board.GetTile(3, 7));
-            whitePieces.AddChild(whiteKing);
+            return pieces.OfType<T>().Any();
         }
 
-        public void CreateGameFromFile()
-        {
-            // TODO
-        }
-
-        public void StartGame(ObjectContainer gameScene)
-        {
-            SubscribeFunctionality();
-            gameScene.AddChild(pieces);
-            pieces.Active(true);
-        }
-
-        public void EndGame(ObjectContainer gameScene)
-        {
-            pieces.Active(false);
-            gameScene.RemoveChild(pieces);
-
-            ClearBoard();
-        }
-
-        #region Helper Methods
-        // Invokes OnGameFinished event with the correct winner
-        // if conditions have been met
+        // Invokes OnGameFinished event with the correct winner (if conditions have been met).
         private void CheckGameFinish()
         {
             List<Tile> allPossiblePlayerMoves = new List<Tile>();
 
-            // Black chekmated white
-            if (whiteKing.InCheck(board.TileBoard))
+            IEnumerable<Piece> checkingPieces;
+
+            // Black chekmated white (BLACK WINS)
+            if (_whiteKing.InCheck(_tileBoard, out checkingPieces))
             {
-                foreach (Piece piece in whitePieces)
-                    allPossiblePlayerMoves.AddRange(FilterMovesThatWouldPutInCheck(piece, piece.GetPossibleMoves(board.TileBoard)));
-                    
+                OnKingChecked?.Invoke(checkingPieces);
+
+                foreach (Piece piece in _whitePieces)
+                    allPossiblePlayerMoves.AddRange(GetFilteredPossibleMoves(piece));
+
 
                 if (allPossiblePlayerMoves.Count <= 0)
-                    OnGameFinished?.Invoke(Team.Black);
+                {
+                    FinishGame(Team.Black);
+                }
             }
-            // White checkmated black
-            else if (blackKing.InCheck(board.TileBoard))
+            // White checkmated black (WHITE WINS)
+            else if (_blackKing.InCheck(_tileBoard, out checkingPieces))
             {
-                foreach (Piece piece in blackPieces)
-                    allPossiblePlayerMoves.AddRange(FilterMovesThatWouldPutInCheck(piece, piece.GetPossibleMoves(board.TileBoard)));
+                OnKingChecked?.Invoke(checkingPieces);
+
+                foreach (Piece piece in _blackPieces)
+                    allPossiblePlayerMoves.AddRange(GetFilteredPossibleMoves(piece));
 
                 if (allPossiblePlayerMoves.Count <= 0)
-                    OnGameFinished?.Invoke(Team.White);
+                {
+                    FinishGame(Team.White);
+                }
             }
             else
             {
-                // White has no possible moves and is not in check
-                foreach (Piece piece in whitePieces)
-                    allPossiblePlayerMoves.AddRange(piece.GetPossibleMoves(board.TileBoard));
+                // White has no possible moves and is not in check (TIE)
+                foreach (Piece piece in _whitePieces)
+                    allPossiblePlayerMoves.AddRange(GetFilteredPossibleMoves(piece));
 
                 if (allPossiblePlayerMoves.Count <= 0)
-                    OnGameFinished?.Invoke(null);
+                {
+                    FinishGame(null);
+                }
 
                 allPossiblePlayerMoves.Clear();
 
-                // Black has no possible moves and is not in check
-                foreach (Piece piece in blackPieces)
-                    allPossiblePlayerMoves.AddRange(piece.GetPossibleMoves(board.TileBoard));
+                // Black has no possible moves and is not in check (TIE)
+                foreach (Piece piece in _blackPieces)
+                    allPossiblePlayerMoves.AddRange(GetFilteredPossibleMoves(piece));
 
                 if (allPossiblePlayerMoves.Count <= 0)
-                    OnGameFinished?.Invoke(null);
+                {
+                    FinishGame(null);
+                }
             }
 
-            // Draw if king vs king
-            if (whitePieces.Count == 1 && blackPieces.Count == 1)
-                OnGameFinished?.Invoke(null);
+            // King vs King (TIE)
+            if (_whitePieces.Count == 1 && ContainsPieceOfType<King>(_whitePieces) && _blackPieces.Count == 1 && ContainsPieceOfType<King>(_blackPieces))
+            {
+                FinishGame(null);
+            }
 
             // Draw if king and bishop vs king
-            if ((whitePieces.Count == 2 && whitePieces.ToList().First(piece => piece is Bishop) != null && blackPieces.Count == 1) ||
-                (blackPieces.Count == 2 && blackPieces.ToList().First(piece => piece is Bishop) != null && whitePieces.Count == 1))
-                OnGameFinished?.Invoke(null);
+            if ((_whitePieces.Count == 2 && _blackPieces.Count == 1 && ContainsPieceOfType<King>(_whitePieces) && ContainsPieceOfType<Bishop>(_whitePieces) && ContainsPieceOfType<King>(_blackPieces)) ||
+                (_blackPieces.Count == 2 && _whitePieces.Count == 1 && ContainsPieceOfType<King>(_blackPieces) && ContainsPieceOfType<Bishop>(_blackPieces) && ContainsPieceOfType<King>(_whitePieces)))
+            {
+                FinishGame(null);
+            }
 
             // Draw if king and knight vs king
-            if ((whitePieces.Count == 2 && whitePieces.ToList().First(piece => piece is Knight) != null && blackPieces.Count == 1) ||
-                (blackPieces.Count == 2 && blackPieces.ToList().First(piece => piece is Knight) != null && whitePieces.Count == 1))
-                OnGameFinished?.Invoke(null);
+            if ((_whitePieces.Count == 2 && _blackPieces.Count == 1 && ContainsPieceOfType<King>(_whitePieces) && ContainsPieceOfType<Knight>(_whitePieces) && ContainsPieceOfType<King>(_blackPieces)) ||
+                (_blackPieces.Count == 2 && _whitePieces.Count == 1 && ContainsPieceOfType<King>(_blackPieces) && ContainsPieceOfType<Knight>(_blackPieces) && ContainsPieceOfType<King>(_whitePieces)))
+            {
+                FinishGame(null);
+            }
 
             // Draw if king and bishop vs king and bishop on the same color
-            if (whitePieces.Count == 2 && whitePieces.ToList().First(piece => piece is Bishop) != null && (whitePieces.ToList().First(piece => piece is Bishop) as Bishop).TilePosition.Coordinate.X % 2 == 0 &&
-                blackPieces.Count == 2 && blackPieces.ToList().First(piece => piece is Bishop) != null && (blackPieces.ToList().First(piece => piece is Bishop) as Bishop).TilePosition.Coordinate.X % 2 == 0)
-                OnGameFinished?.Invoke(null);
-
-            if (whitePieces.Count == 2 && whitePieces.ToList().First(piece => piece is Bishop) != null && (whitePieces.ToList().First(piece => piece is Bishop) as Bishop).TilePosition.Coordinate.X % 2 == 1 &&
-                blackPieces.Count == 2 && blackPieces.ToList().First(piece => piece is Bishop) != null && (blackPieces.ToList().First(piece => piece is Bishop) as Bishop).TilePosition.Coordinate.X % 2 == 1)
-                OnGameFinished?.Invoke(null);
+            if (_whitePieces.Count == 2 && _blackPieces.Count == 2 && ContainsPieceOfType<King>(_whitePieces) && ContainsPieceOfType<Bishop>(_whitePieces) && ContainsPieceOfType<King>(_blackPieces) && ContainsPieceOfType<Bishop>(_blackPieces) &&
+                    _whitePieces.First(piece => piece is Bishop).TilePosition.Coordinate.X % 2 == _blackPieces.First(piece => piece is Bishop).TilePosition.Coordinate.X % 2)
+            {
+                FinishGame(null);
+            }
         }
 
         private void TogglePlayerTurn()
@@ -234,164 +228,299 @@ namespace Chess.Managers
             switch (PlayerTurn)
             {
                 case Team.White:
-                    PlayerTurn = Team.Black;
-                    break;
-                case Team.Black:
-                    PlayerTurn = Team.White;
-                    break;
-            }
-
-            TurnCount++;
-            OnPlayerTurnChange?.Invoke();
-        }
-
-        private bool MovedPieceTo(Piece piece, Tile targetTile)
-        {
-            if (targetTile.Piece == null)
-            {
-                piece.MoveTo(targetTile);
-                return true;
-            }
-            else
-            {
-                // Check Capture
-                if (targetTile.Piece.Team != piece.Team)
-                {
-                    Capture(targetTile.Piece);
-                    piece.MoveTo(targetTile);
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        private bool MoveWouldPutInCheck(Piece piece, Tile destinationOfPiece)
-        {
-            checkVerificationBoard.ClearTiles();
-
-            for (int i = 0; i < board.Tiles.GetLength(0); i++)
-            {
-                for (int j = 0; j < board.Tiles.GetLength(1); j++)
-                {
-                    if (board[j, i].Piece == piece)
-                        checkVerificationBoard[destinationOfPiece.Coordinate.X, destinationOfPiece.Coordinate.Y].Piece = piece;
-                    else
-                        checkVerificationBoard[j, i].Piece = board[j, i].Piece;
-                }
-            }
-
-            switch (piece.Team)
-            {
-                case Team.White:
-                    if (whiteKing.InCheck(checkVerificationBoard))
-                        return true;
-                    break;
-                case Team.Black:
-                    if (blackKing.InCheck(checkVerificationBoard))
-                        return true;
-                    break;
-            }
-            return false;
-        }
-
-        private IEnumerable<Tile> FilterMovesThatWouldPutInCheck(Piece piece, IEnumerable<Tile> moves)
-        {
-            return moves.Where(move => !MoveWouldPutInCheck(piece, move));
-        }
-
-            private void Capture(Piece piece)
-        {
-            if (piece.Team == Team.White)
-                whitePieces.RemoveChild(piece);
-            else
-                blackPieces.RemoveChild(piece);
-        }
-
-        // Removes all pieces from play
-        private void ClearBoard()
-        {
-            whitePieces.Clear();
-            blackPieces.Clear();
-
-            PlayerTurn = Team.White;
-            TurnCount = 0;
-
-            moves.Clear();
-        }
-
-        private void SubscribeFunctionality()
-        {
-            void SubscribePieceFunctionalities(Piece piece)
-            {
-                // Selection functionality
-                piece.OnClick += () =>
-                {
-                    switch (PlayerState)
                     {
-                        case PlayerState.Selecting:
-                            if (piece.Team == PlayerTurn)
-                                OnPieceSelected?.Invoke(piece);
-                            break;
-                        case PlayerState.Moving:
-                            if (piece == selectedPiece)
-                                OnPieceDeselected?.Invoke();
-                            else if (piece.Team == PlayerTurn)
-                            {
-                                OnPieceDeselected?.Invoke();
-                                OnPieceSelected?.Invoke(piece);
-                            }
-                            break;
+                        PlayerTurn = Team.Black;
+                        break;
                     }
-                };
-
-                if (piece is Pawn)
-                {
-                    (piece as Pawn).OnEnPassantCapture += pieceCapture =>
+                case Team.Black:
                     {
-                        Capture(pieceCapture);
-                    };
+                        PlayerTurn = Team.White;
+                        break;
+                    }
+            }
+
+            TurnsTaken++;
+            OnPlayerTurnChange?.Invoke(PlayerTurn);
+        }
+
+        private void SetTurn(int turnIndex, Team team)
+        {
+            TurnsTaken = turnIndex;
+            PlayerTurn = team;
+            OnPlayerTurnChange?.Invoke(PlayerTurn);
+        }
+
+        private IEnumerable<Tile> GetFilteredPossibleMoves(Piece piece)
+        {
+            IEnumerable<Tile> possibleMoves = piece.GetPossibleMoves(_tileBoard);
+
+            var possibleMovesFilteredForCheck = new HashSet<Tile>(possibleMoves);
+
+            // Filter out moves that would put in check
+            foreach (Tile tile in possibleMoves)
+            {
+                Tile originalPositionOfPiece = piece.TilePosition;
+                Piece originalPieceInTile = tile.Piece;
+
+                piece.TilePosition = tile;
+
+                switch (piece.Team)
+                {
+                    case Team.White:
+                        if (_whiteKing.InCheck(_tileBoard))
+                        {
+                            possibleMovesFilteredForCheck.Remove(tile);
+                        }
+                        
+                        break;
+                    case Team.Black:
+                        if (_blackKing.InCheck(_tileBoard))
+                        {
+                            possibleMovesFilteredForCheck.Remove(tile);
+                        }
+                        break;
                 }
+
+                piece.TilePosition = originalPositionOfPiece;
+                tile.Piece = originalPieceInTile;
             }
 
-            foreach (Piece piece in whitePieces)
-            {
-                SubscribePieceFunctionalities(piece);
-            }
+            // Filter out capturing the King
+            var filteredPossibleMoves = possibleMovesFilteredForCheck.Where(tile => !(tile.Piece is King));
 
-            foreach (Piece piece in blackPieces)
-            {
-                SubscribePieceFunctionalities(piece);
-            }
+            return filteredPossibleMoves;
+        }
 
-            whiteKing.OnKingChecked += checkingPiece =>
-            {
-                checkingPiece.TilePosition.DrawColor = CheckingPieceTint;
-            };
+        private void RestartGame()
+        {
+            _pieces.Clear();
+            _whitePieces.Clear();
+            _blackPieces.Clear();
+            // _moves.Clear();
 
-            blackKing.OnKingChecked += checkingPiece =>
-            {
-                checkingPiece.TilePosition.DrawColor = CheckingPieceTint;
-            };
+            _tileBoard.ClearPiecesOnTiles();
+            _tileBoard.ClearTilesTint();
 
-            board.ApplyClickFunctionalityToTiles(tile =>
+            SetTurn(0, Team.White);
+
+            _playerState = PlayerState.SelectingPiece;
+
+            OnGameStart?.Invoke();
+        }
+
+        // Piece builder/factory function
+        private Piece CreatePiece<T>(Tile position, Team team) where T : Piece, new()
+        {
+            Piece piece = new T();
+            piece.TilePosition = position;
+            piece.Transform.Position = piece.TilePosition.Transform.GlobalPosition;
+            piece.Team = team;
+
+            // Events
+            piece.OnLeftMouseUp += () =>
             {
-                if (PlayerState == PlayerState.Moving)
+                switch (_playerState)
                 {
-                    if (selectedPiecePossibleMoves.Contains(tile))
-                    {
-                        if (MovedPieceTo(selectedPiece, tile))
+                    case PlayerState.SelectingPiece:
+                        if (piece.Team == PlayerTurn)
+                            OnPieceSelected?.Invoke(piece);
+                        break;
+                    case PlayerState.MovingPiece:
+                        if (piece == _selectedPiece)
+                            OnPieceDeselected?.Invoke();
+                        else if (piece.Team == PlayerTurn)
                         {
                             OnPieceDeselected?.Invoke();
-                            moves.Add(new Move(TurnCount, selectedPiece, tile.Coordinate));
-                            CheckGameFinish();
-                            board.TileBoard.ClearTilesTint();
-                            TogglePlayerTurn();
+                            OnPieceSelected?.Invoke(piece);
                         }
-                    }
+                        break;
+                    default:
+                        // Do Nothing
+                        break;
                 }
-            });
+            };
+
+            if (piece is Pawn)
+            {
+                (piece as Pawn).OnEnPassantCapture += pieceToCapture =>
+                {
+                    Capture(pieceToCapture);
+                };
+            }
+
+            if (piece is King)
+            {
+                (piece as King).OnCastle += (rook, rookDestination) =>
+                {
+                    rook.MoveTo(rookDestination);
+                };
+            }
+
+            return piece;
         }
-        #endregion
+
+        private void AddPieceToGame(Piece piece)
+        {
+            _pieces.Add(piece);
+
+            if (piece.Team == Team.White)
+            {
+                _whitePieces.Add(piece);
+            }
+            else
+            {
+                _blackPieces.Add(piece);
+            }
+        }
+
+        private void RemovePieceFromGame(Piece piece)
+        {
+            piece.TilePosition.Piece = null;
+
+            _pieces.Remove(piece);
+
+            if (piece.Team == Team.White)
+            {
+                _whitePieces.Remove(piece);
+            }
+            else
+            {
+                _blackPieces.Remove(piece);
+            }
+        }
+
+        // Alias for RemovePieceFromGame
+        private void Capture(Piece piece) => RemovePieceFromGame(piece);
+
+        private void MovePieceTo(Piece piece, Tile targetTile)
+        {
+            Tile.TileName from = piece.TilePosition.Name;
+
+            // Check Capture
+            if (targetTile.Piece != null && piece.Team != targetTile.Piece.Team)
+            {
+                Capture(targetTile.Piece);
+            }
+
+            piece.MoveTo(targetTile);
+
+            Tile.TileName to = piece.TilePosition.Name;
+
+            // _moves.Push(new Move(_selectedPiece, from, to));
+        }
+
+        // Create traditional piece set up
+        public void CreateNewDefaultGame()
+        {
+            RestartGame();
+
+            // White
+            _whiteKing = CreatePiece<King>(_tileBoard[3, 0], Team.White) as King;
+            AddPieceToGame(_whiteKing);
+
+            AddPieceToGame(CreatePiece<Bishop>(_tileBoard[2, 0], Team.White));
+            AddPieceToGame(CreatePiece<Bishop>(_tileBoard[5, 0], Team.White));
+            AddPieceToGame(CreatePiece<Knight>(_tileBoard[1, 0], Team.White));
+            AddPieceToGame(CreatePiece<Knight>(_tileBoard[6, 0], Team.White));
+            AddPieceToGame(CreatePiece<Pawn>(_tileBoard[0, 1], Team.White));
+            AddPieceToGame(CreatePiece<Pawn>(_tileBoard[1, 1], Team.White));
+            AddPieceToGame(CreatePiece<Pawn>(_tileBoard[2, 1], Team.White));
+            AddPieceToGame(CreatePiece<Pawn>(_tileBoard[3, 1], Team.White));
+            AddPieceToGame(CreatePiece<Pawn>(_tileBoard[4, 1], Team.White));
+            AddPieceToGame(CreatePiece<Pawn>(_tileBoard[5, 1], Team.White));
+            AddPieceToGame(CreatePiece<Pawn>(_tileBoard[6, 1], Team.White));
+            AddPieceToGame(CreatePiece<Pawn>(_tileBoard[7, 1], Team.White));
+            AddPieceToGame(CreatePiece<Queen>(_tileBoard[4, 0], Team.White));
+            AddPieceToGame(CreatePiece<Rook>(_tileBoard[0, 0], Team.White));
+            AddPieceToGame(CreatePiece<Rook>(_tileBoard[7, 0], Team.White));
+
+            // Black
+            _blackKing = CreatePiece<King>(_tileBoard[3, 7], Team.Black) as King;
+            AddPieceToGame(_blackKing);
+
+            AddPieceToGame(CreatePiece<Bishop>(_tileBoard[2, 7], Team.Black));
+            AddPieceToGame(CreatePiece<Bishop>(_tileBoard[5, 7], Team.Black));
+            AddPieceToGame(CreatePiece<Knight>(_tileBoard[1, 7], Team.Black));
+            AddPieceToGame(CreatePiece<Knight>(_tileBoard[6, 7], Team.Black));
+            AddPieceToGame(CreatePiece<Pawn>(_tileBoard[0, 6], Team.Black));
+            AddPieceToGame(CreatePiece<Pawn>(_tileBoard[1, 6], Team.Black));
+            AddPieceToGame(CreatePiece<Pawn>(_tileBoard[2, 6], Team.Black));
+            AddPieceToGame(CreatePiece<Pawn>(_tileBoard[3, 6], Team.Black));
+            AddPieceToGame(CreatePiece<Pawn>(_tileBoard[4, 6], Team.Black));
+            AddPieceToGame(CreatePiece<Pawn>(_tileBoard[5, 6], Team.Black));
+            AddPieceToGame(CreatePiece<Pawn>(_tileBoard[6, 6], Team.Black));
+            AddPieceToGame(CreatePiece<Pawn>(_tileBoard[7, 6], Team.Black));
+            AddPieceToGame(CreatePiece<Queen>(_tileBoard[4, 7], Team.Black));
+            AddPieceToGame(CreatePiece<Rook>(_tileBoard[0, 7], Team.Black));
+            AddPieceToGame(CreatePiece<Rook>(_tileBoard[7, 7], Team.Black));
+
+            // Load all Pieces
+            foreach (Piece piece in _pieces)
+            {
+                piece.Load(AppManager.AppRunning);
+            }
+        }
+
+        public void CreateNewGameFromFile(string path)
+        {
+            RestartGame();
+
+            // TODO
+        }
+
+        public void GiveUp(Team team)
+        {
+            switch (team)
+            {
+                case Team.White:
+                    FinishGame(Team.Black);
+                    break;
+                case Team.Black:
+                    FinishGame(Team.White);
+                    break;
+            }
+        }
+
+        private void FinishGame(Team? team)
+        {
+            _playerState = PlayerState.FinishedGame;
+            OnGameFinished?.Invoke(team);
+        }
+
+        protected override void OnUpdate(GameTime gameTime)
+        {
+            HandleKeyboardInputs();
+
+            foreach (Piece piece in _pieces)
+            {
+                piece.Update(gameTime);
+            }
+        }
+
+        private void HandleKeyboardInputs()
+        {
+            if (_playerState == PlayerState.MovingPiece && MonoGameEngine.Mouse.IsRightMouseDown)
+            {
+                OnPieceDeselected?.Invoke();
+            }
+
+            if (Input.IsKeyCombinationDown(Keys.LeftControl, Keys.Z))
+            {
+                _moveManager.Undo(_tileBoard);
+            }
+
+            if (Input.IsKeyCombinationDown(Keys.LeftControl, Keys.Y))
+            {
+                _moveManager.Redo(_tileBoard);
+            }
+        }
+
+        protected override void OnDraw(SpriteBatch spriteBatch)
+        {
+            foreach (Piece piece in _pieces)
+            {
+                piece.Draw(spriteBatch);
+            }
+        }
     }
 }

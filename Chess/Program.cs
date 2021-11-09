@@ -14,8 +14,7 @@ namespace Chess
         [STAThread]
         static void Main()
         {
-            using (var game = new ChessGame())
-                game.Run();
+            MonoGameEngine.AppManager.StartApp<ChessGame>();
         }
     }
 #endif

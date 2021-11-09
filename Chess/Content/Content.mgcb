@@ -61,7 +61,7 @@
 /processorParam:TextureFormat=Color
 /build:chessBoard.png
 
-#begin chessBoard.png
+#begin chessTitle.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -71,19 +71,7 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:chessBoard.png
-
-#begin ChessTitle.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:ChessTitle.png
+/build:chessTitle.png
 
 #begin floorBackground.png
 /importer:TextureImporter
@@ -111,12 +99,12 @@
 /processorParam:TextureFormat=Compressed
 /build:Fonts/debugFont.spritefont
 
-#begin Fonts/winFont.spritefont
+#begin Fonts/textFont.spritefont
 /importer:FontDescriptionImporter
 /processor:FontDescriptionProcessor
 /processorParam:PremultiplyAlpha=True
 /processorParam:TextureFormat=Compressed
-/build:Fonts/winFont.spritefont
+/build:Fonts/textFont.spritefont
 
 #begin Pieces/bb.png
 /importer:TextureImporter
