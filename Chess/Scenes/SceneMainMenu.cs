@@ -1,4 +1,6 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System.IO;
+using System.Windows.Forms;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 using MonoGameEngine;
@@ -33,22 +35,40 @@ namespace Chess
             titleGameObject.Texture = titleTexture;
             titleGameObject.Transform.Position = new Vector3(300, 150, uiLayerDepth);
 
-            Button buttonPlay = chessGameApp.CreateButton("Play", new Vector3(350, 300, uiLayerDepth));
-            Button buttonLoad = chessGameApp.CreateButton("Load", new Vector3(350, 350, uiLayerDepth));
-            buttonLoad.Enabled = false;
-            Button buttonQuit = chessGameApp.CreateButton("Quit", new Vector3(350, 400, uiLayerDepth));
+            MonoGameEngine.Button buttonPlay = chessGameApp.CreateButton("Play", new Vector3(350, 300, uiLayerDepth));
+            MonoGameEngine.Button buttonLoad = chessGameApp.CreateButton("Load", new Vector3(350, 350, uiLayerDepth));
+            MonoGameEngine.Button buttonQuit = chessGameApp.CreateButton("Quit", new Vector3(350, 400, uiLayerDepth));
 
             // Button Click Events
             buttonPlay.OnLeftMouseUp += () =>
                 {
                     app.SceneManager.LoadScene<ScenePlay>();
                     ScenePlay playSceneCasted = app.SceneManager.CurrentScene as ScenePlay;
-                    playSceneCasted.GameManager.CreateNewDefaultGame();
+                    playSceneCasted.GameManager.StartNewGame();
                 };
+
             buttonLoad.OnLeftMouseUp += () =>
                 {
-                // TODO: <Loading code here>
-            };
+                    // Open Dialog Box to select Save File
+                    using (OpenFileDialog openFileDialog = new OpenFileDialog())
+                    {
+                        string relativePathToSavedGames = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "./SavedGames"));
+                        openFileDialog.InitialDirectory = relativePathToSavedGames;
+                        openFileDialog.Filter = "Save files (*.sav)|*.sav";
+                        openFileDialog.RestoreDirectory = true;
+
+                        if (openFileDialog.ShowDialog() == DialogResult.OK)
+                        {
+                            // Path of selected file
+                            string filePath = openFileDialog.FileName;
+
+                            // Start game from filepath
+                            app.SceneManager.LoadScene<ScenePlay>();
+                            ScenePlay playSceneCasted = app.SceneManager.CurrentScene as ScenePlay;
+                            playSceneCasted.GameManager.LoadGameFromFile(filePath);
+                        }
+                    }
+                };
             buttonQuit.OnLeftMouseUp += () =>
             {
                 AppManager.StopApp();

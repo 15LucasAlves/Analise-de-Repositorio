@@ -35,12 +35,12 @@ namespace Chess
 
         public bool InCheck(TileBoard board)
         {
-            return board.TileIsThreatened(TilePosition, Team);
+            return board.IsTileThreatened(TilePosition, Team);
         }
 
         public bool InCheck(TileBoard board, out IEnumerable<Piece> checkingPieces)
         {
-            return board.TileIsThreatened(TilePosition, Team, out checkingPieces);
+            return board.IsTileThreatened(TilePosition, Team, out checkingPieces);
         }
 
         public override void MoveTo(Tile tile)
@@ -54,7 +54,7 @@ namespace Chess
         // Takes into account enemy threatened tiles
         protected bool IsPossibleMove(TileBoard board, Tile tile)
         {
-            return IsPossibleMove(tile) && !board.TileIsThreatened(tile, Team);
+            return IsPossibleMove(tile) && !board.IsTileThreatened(tile, Team);
         }
 
         public override IEnumerable<Tile> GetPossibleMoves(TileBoard board)
@@ -111,7 +111,7 @@ namespace Chess
                         if (tileBeingChecked != null)
                         {
                             // King would pass through a square that is threatened
-                            if (board.TileIsThreatened(tileBeingChecked, Team))
+                            if (board.IsTileThreatened(tileBeingChecked, Team))
                             {
                                 break;
                             }
@@ -155,7 +155,7 @@ namespace Chess
                         if (tileBeingChecked != null)
                         {
                             // King would pass through a square that is threatened
-                            if (board.TileIsThreatened(tileBeingChecked, Team))
+                            if (board.IsTileThreatened(tileBeingChecked, Team))
                             {
                                 break;
                             }

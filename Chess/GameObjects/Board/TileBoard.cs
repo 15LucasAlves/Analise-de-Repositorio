@@ -12,6 +12,36 @@ namespace Chess
     {
         public Tile[,] Tiles { get; private set; }
 
+        public int Width { get; private set; }
+
+        public int Height { get; private set; }
+
+
+        public TileBoard(int width, int height) : base()
+        {
+            // Create tiles array
+            Tiles = new Tile[width, height];
+
+            // Set Dimensions
+            Width = width;
+            Height = height;
+
+            // Populate tiles array with new tiles
+            for (int i = 0; i < width; i++)
+            {
+                for (int j = 0; j < height; j++)
+                {
+                    // Create tile
+                    Tiles[j, i] = new Tile(j, i);
+
+                    // Add tile to children
+                    Transform.AddChildren(Tiles[j, i]);
+                }
+            }
+        }
+
+
+        // Tiles array accessors
         public Tile this[int x, int y]
         {
             get
@@ -25,54 +55,31 @@ namespace Chess
             }
         }
 
-        public int Width { get; private set; }
+        public Tile GetTile(int x, int y) => Tiles[x, y];
 
-        public int Height { get; private set; }
+        public Tile GetTile(Point coordinate) => Tiles[coordinate.X, coordinate.Y];
 
-
-        public TileBoard(int boardWidth, int boardHeight) : base()
+        public Tile GetTile(Tile.TileName tileName)
         {
-            // Set Dimensions
-            Width = boardWidth;
-            Height = boardHeight;
+            Point coordinate = tileName.ToCoordinate();
+            return Tiles[coordinate.X, coordinate.Y];
+        }
 
-            // Create Board
-            Tiles = new Tile[Width, Height];
-
-            // Populate it with tiles
-            for (int i = 0; i < Tiles.GetLength(0); i++)
-            {
-                for (int j = 0; j < Tiles.GetLength(1); j++)
-                {
-                    // Create tile
-                    Tiles[j, i] = new Tile(new Point(j, i));
-                    // Add it to the children
-                    Transform.AddChildren(Tiles[j, i]);
-                }
-            }
+        public Tile GetTile(string name)
+        {
+            Tile.TileName tileName = Tile.TileName.From(name);
+            Point coordinate = tileName.ToCoordinate();
+            return Tiles[coordinate.X, coordinate.Y];
         }
 
 
         public int Distance(Tile tile1, Tile tile2) => (int)Vector2.Distance(tile1.Coordinate.ToVector2(), tile2.Coordinate.ToVector2());
 
-        /// <summary>
-        /// Copies all pieces in one tileboard to another.
-        /// </summary>
-        public void CopyTileboardInto(TileBoard tileboard)
-        {
-            for (int x = 0; x < Tiles.GetLength(0); x++)
-            {
-                for (int y = 0; y < Tiles.GetLength(1); y++)
-                {
-                    Tiles[x, y].Piece = tileboard.Tiles[x, y].Piece;
-                }
-            }
-        }
 
         /// <summary>
         /// Returns whether a certain tile is being threatened by a piece from the opposite team.
         /// </summary>
-        public bool TileIsThreatened(Tile tileBeingChecked, Team pieceTeam)
+        public bool IsTileThreatened(Tile tileBeingChecked, Team pieceTeam)
         {
             foreach (Tile tile in Tiles)
             {
@@ -124,7 +131,7 @@ namespace Chess
         /// Returns whether a certain tile is being threatened by a piece from the opposite team.
         /// Returns which pieces are threatening specifically as an out parameter.
         /// </summary>
-        public bool TileIsThreatened(Tile tileBeingChecked, Team pieceTeam, out IEnumerable<Piece> threateningPieces)
+        public bool IsTileThreatened(Tile tileBeingChecked, Team pieceTeam, out IEnumerable<Piece> threateningPieces)
         {
             List<Piece> listOfThreateningPieces = new List<Piece>();
 
@@ -177,9 +184,9 @@ namespace Chess
 
 
         /// <summary>
-        /// Calls a function on all tiles of this tileboard.
+        /// Calls a provided function on all tiles on this TileBoard.
         /// </summary>
-        public void ApplyFunctionToAllTiles(Action<Tile> function)
+        public void CallFunctionOnAllTiles(Action<Tile> function)
         {
             foreach (Tile tile in Tiles)
             {
@@ -188,8 +195,8 @@ namespace Chess
         }
 
         // Common functions applied to all tiles
-        public void TextureTiles(Func<Tile, Texture2D> tileTexturingFunction) => ApplyFunctionToAllTiles((tile) => tile.Texture = tileTexturingFunction(tile));
-        public void ClearPiecesOnTiles() => ApplyFunctionToAllTiles((tile) => tile.Piece = null);
-        public void ClearTilesTint() => ApplyFunctionToAllTiles((tile) => tile.Tint = Color.White);
+        public void TextureTiles(Func<Tile, Texture2D> tileTexturingFunction) => CallFunctionOnAllTiles((tile) => tile.Texture = tileTexturingFunction(tile));
+        public void ClearPiecesOnTiles() => CallFunctionOnAllTiles((tile) => tile.Piece = null);
+        public void ClearTilesTint() => CallFunctionOnAllTiles((tile) => tile.Tint = Color.White);
     }
 }

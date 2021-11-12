@@ -10,32 +10,21 @@ namespace Chess
     {
         public const int BoardDimensions = 8;
 
-
         public TileBoard TileBoard { get; private set; }
-
-        public Tile[,] Tiles => TileBoard.Tiles;
-
-        public Tile this[int x, int y] => TileBoard[x, y];
 
 
         public ChessBoard() : base()
         {
             // Create the TileBoard
             TileBoard = new TileBoard(BoardDimensions, BoardDimensions);
+
             // Add it to the ChessBoard's children
             Transform.AddChildren(TileBoard);
+
             // Position the TileBoard correctly inside the Chessboard edge texture
             TileBoard.Transform.Position += new Vector3(38f * Transform.GlobalScale.X, 38f * Transform.GlobalScale.Y, 0);
         }
-
-
-        public Tile GetTile(int x, int y) => Tiles[x, y];
-        public Tile GetTile(Point coordinate) => Tiles[coordinate.X, coordinate.Y];
-        public Tile GetTile(Tile.TileName tileName)
-        {
-            Point coordinate = tileName.ToCoordinate();
-            return Tiles[coordinate.X, coordinate.Y];
-        }
+        
 
         protected override void OnLoad(MonoGameApp app)
         {
@@ -66,17 +55,17 @@ namespace Chess
             TileBoard.TextureTiles(tileTexturingFunction);
 
             // Position the Tile GameObjects correctly
-            TileBoard.ApplyFunctionToAllTiles((tile) =>
+            foreach(Tile tile in TileBoard.Tiles)
             {
                 tile.Transform.Position = new Vector3(tile.Coordinate.X * tile.Texture.Bounds.Width * tile.Transform.Scale.X, (BoardDimensions - 1 - tile.Coordinate.Y) * tile.Texture.Bounds.Height * tile.Transform.Scale.Y, Transform.Position.Z);
-            });
+            }
         }
 
         protected override void OnDraw(SpriteBatch spriteBatch)
         {
             base.OnDraw(spriteBatch);
 
-            foreach (Tile tile in Tiles)
+            foreach (Tile tile in TileBoard.Tiles)
             {
                 tile.Draw(spriteBatch);
             }

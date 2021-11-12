@@ -1,4 +1,6 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System.IO;
+using System.Windows.Forms;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 using MonoGameEngine;
@@ -7,7 +9,7 @@ namespace Chess
 {
     class ScenePlay : Scene
     {
-        public GameManager GameManager { get; private set; }
+        public ChessGameManager GameManager { get; private set; }
 
         protected override void OnSceneLoad(MonoGameApp app)
         {
@@ -45,34 +47,44 @@ namespace Chess
             ChessBoard chessBoard = new ChessBoard();
             chessBoard.Transform.Position = new Vector3(166, 80, boardLayerDepth);
 
-            Button buttonSave = chessGameApp.CreateButton("Save Game", new Vector3(680, 190, uiLayerDepth));
-            buttonSave.Enabled = false;
-            Button buttonGiveUp = chessGameApp.CreateButton("Give Up", new Vector3(680, 250, uiLayerDepth));
-            Button buttonPlayAgain = chessGameApp.CreateButton("Play Again", new Vector3(680, 310, uiLayerDepth));
+            MonoGameEngine.Button buttonSave = chessGameApp.CreateButton("Save Game", new Vector3(680, 190, uiLayerDepth));
+            MonoGameEngine.Button buttonGiveUp = chessGameApp.CreateButton("Give Up", new Vector3(680, 250, uiLayerDepth));
+            MonoGameEngine.Button buttonPlayAgain = chessGameApp.CreateButton("Play Again", new Vector3(680, 310, uiLayerDepth));
             buttonPlayAgain.SetActive(false);
-            Button buttonMainMenu = chessGameApp.CreateButton("Main Menu", new Vector3(680, 370, uiLayerDepth));
+            MonoGameEngine.Button buttonMainMenu = chessGameApp.CreateButton("Main Menu", new Vector3(680, 370, uiLayerDepth));
             buttonMainMenu.SetActive(false);
 
-            GameManager = new GameManager(chessBoard.TileBoard);
+            GameManager = new ChessGameManager(chessBoard.TileBoard);
 
 
             // Button Click Events
             buttonSave.OnLeftMouseUp += () =>
             {
-                // TODO: <Saving code here>
+                // Open Dialog Box to select save file location
+                using (SaveFileDialog openFileDialog = new SaveFileDialog())
+                {
+                    string relativePathToSavedGames = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "./SavedGames"));
+                    openFileDialog.InitialDirectory = relativePathToSavedGames;
+                    openFileDialog.Filter = "Save files (*.sav)|*.sav";
+                    openFileDialog.RestoreDirectory = true;
+
+                    if (openFileDialog.ShowDialog() == DialogResult.OK)
+                    {
+                        // Path of selected file
+                        string filePath = openFileDialog.FileName;
+
+                        // Save the game at selected filepath
+                        GameManager.SaveManager.Save(filePath);
+                    }
+                }
             };
             buttonGiveUp.OnLeftMouseUp += () =>
             {
-                GameManager.GiveUp(GameManager.PlayerTurn);
+                GameManager.GiveUp(GameManager.TurnManager.TurnTeam);
             };
             buttonPlayAgain.OnLeftMouseUp += () =>
             {
-                buttonPlayAgain.SetActive(false);
-                buttonMainMenu.SetActive(false);
-                buttonSave.Visible = true;
-                buttonGiveUp.SetActive(true);
-
-                GameManager.CreateNewDefaultGame();
+                GameManager.StartNewGame();
             };
             buttonMainMenu.OnLeftMouseUp += () =>
             {
@@ -83,7 +95,16 @@ namespace Chess
             // GameManager Events
             GameManager.OnGameStart += () =>
             {
+                buttonGiveUp.Enabled = true;
+                buttonPlayAgain.SetActive(false);
+                buttonMainMenu.SetActive(false);
+            };
 
+            GameManager.OnGameUndoFinished += () =>
+            {
+                buttonGiveUp.Enabled = true;
+                buttonPlayAgain.SetActive(false);
+                buttonMainMenu.SetActive(false);
             };
 
             GameManager.OnGameFinished += winner =>
@@ -108,13 +129,12 @@ namespace Chess
                         break;
                 }
 
-                buttonSave.Visible = false;
-                buttonGiveUp.SetActive(false);
+                buttonGiveUp.Enabled = false;
                 buttonPlayAgain.SetActive(true);
                 buttonMainMenu.SetActive(true);
             };
 
-            GameManager.OnPlayerTurnChange += (pieceTeam) =>
+            GameManager.TurnManager.OnTurnChange += (pieceTeam) =>
             {
                 switch (pieceTeam)
                 {
@@ -130,7 +150,7 @@ namespace Chess
                         }
                 }
 
-                turnCountLabel.Text = "Turn: " + (GameManager.TurnsTaken + 1);
+                turnCountLabel.Text = "Turn: " + (GameManager.TurnManager.TurnIndex + 1);
             };
 
 

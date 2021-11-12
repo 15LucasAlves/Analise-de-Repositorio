@@ -1,41 +1,46 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace Chess
 {
     class MoveManager
     {
-        private BackAndForwardStack<Move> _moveStack = new BackAndForwardStack<Move>();
+        private UndoRedoStack<MoveCommand> _moveStack = new UndoRedoStack<MoveCommand>();
 
-        public MoveManager()
+        private ChessGameManager _gameManager;
+        private TileBoard _board;
+
+        public MoveManager(ChessGameManager gameManager, TileBoard board)
         {
+            _gameManager = gameManager;
+            _board = board;
         }
 
-        public void Execute(Move move, TileBoard board)
+        public IEnumerable<Move> GetMovesSnapshot()
         {
-            Point fromCoordinate = move.from.ToCoordinate();
-            Point toCoordinate = move.to.ToCoordinate();
-
-            Piece piece = board[fromCoordinate.X, fromCoordinate.Y].Piece;
-            piece.MoveTo(board[toCoordinate.X, toCoordinate.Y]);
+            return _moveStack.BackCollection().Select(MoveCommand => MoveCommand.Move).Reverse();
         }
 
-        public void ExecuteInverse(Move move, TileBoard board)
+        public void Do(Move move)
         {
-            Point fromCoordinate = move.from.ToCoordinate();
-            Point toCoordinate = move.to.ToCoordinate();
-
-            Piece piece = board[toCoordinate.X, toCoordinate.Y].Piece;
-            piece.MoveTo(board[fromCoordinate.X, fromCoordinate.Y]);
+            MoveCommand moveCommand = new MoveCommand(move, _gameManager, _board);
+            _moveStack.Push(moveCommand);
+            moveCommand.Execute();
         }
 
-        public void Undo(TileBoard board)
+        public void Undo()
         {
-            ExecuteInverse(_moveStack.Back(), board);
+            _moveStack.BackPop()?.Undo();
         }
 
-        public void Redo(TileBoard board)
+        public void Redo()
         {
-            Execute(_moveStack.Back(), board);
+            _moveStack.FrontPop()?.Execute();
+        }
+
+        public void Clear()
+        {
+            _moveStack.Clear();
         }
     }
 }

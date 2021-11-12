@@ -62,7 +62,13 @@ namespace Chess
         public TileName Name { get; private set; }
 
         public Piece Piece { get; set; }
+        public bool IsEmpty => Piece == null;
 
+
+        public Tile(int x, int y) : base()
+        {
+            Coordinate = new Point(x, y);
+        }
 
         public Tile (Point coordinate) : base()
         {
@@ -70,19 +76,17 @@ namespace Chess
         }
 
 
-        public bool IsEmpty => Piece == null;
-
-        public override string ToString()
-        {
-            return Name.ToString();
-        }
-
         protected override void OnLoad(MonoGameApp app)
         {
             base.OnLoad(app);
 
             // Default tile texture is the white tile
             Texture = app.Content.Load<Texture2D>("whiteTile");
+        }
+
+        public override string ToString()
+        {
+            return Name.ToString();
         }
     }
 }
