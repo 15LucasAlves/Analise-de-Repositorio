@@ -198,26 +198,26 @@ Por fim, há falta de comentários no próprio código, o que torna difícil per
 
 **TurnManager.cs**
 
-		Código para definir turnos, e a vez de quem joga. E guarda também o turno anterior caso seja para voltar. No caso de carregamento de um jogo, da set no turno em que estava anteriormente.
+	Código para definir turnos, e a vez de quem joga. E guarda também o turno anterior caso seja para voltar. No caso de carregamento de um jogo, da set no turno em que estava anteriormente.
 
 ## Ficheiros fora de folders:
 
 **ChessGame.cs**
 
-		Inicializa algumas cores, deixa o mouse visível e certifica-se que o jogo inicia na cena do “ Main Menu”, Também cria uma emergency exit no escape key 
+	Inicializa algumas cores, deixa o mouse visível e certifica-se que o jogo inicia na cena do “ Main Menu”, Também cria uma emergency exit no escape key 
 
 ```ruby
-		// Emergency exit on ESC key
-            	if (MonoGameEngine.Keyboard.IsKeyUp(Keys.Escape))
-            	{
-                AppManager.StopApp() }
+// Emergency exit on ESC key
+if (MonoGameEngine.Keyboard.IsKeyUp(Keys.Escape))
+{
+AppManager.StopApp() }
 ```
 
 **ChessGameManager.cs**
 	
-		Neste ficheiro ele trata de tudo o que é relacionado com o jogo, regras de movimento, verificações de início / término de jogo, desfazer e refazer ações, criar as peças e localizá-las. Também tem a função para um player poder desistir da partida. Existe uma função para mostrar os moves possíveis que não deixariam o próprio jogador em cheque. Por último, ele guarda o estado do jogo num ficheiro binário.
+	Neste ficheiro ele trata de tudo o que é relacionado com o jogo, regras de movimento, verificações de início / término de jogo, desfazer e refazer ações, criar as peças e localizá-las. Também tem a função para um player poder desistir da partida. Existe uma função para mostrar os moves possíveis que não deixariam o próprio jogador em cheque. Por último, ele guarda o estado do jogo num ficheiro binário.
  
 
 **Program.cs**
 
-		Início da aplicação. (ficheiro a correr caso possível testar o jogo)
+	Início da aplicação. (ficheiro a correr caso possível testar o jogo)
