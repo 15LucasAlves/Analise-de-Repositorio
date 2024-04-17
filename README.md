@@ -57,14 +57,14 @@ Por fim, há falta de comentários no próprio código, o que torna difícil per
 
 	A função protected override void OnLoad(MonoGameApp app) é chamada para dar load das texturas e aplicá-las nas tileboards, posicionando as corretamente:
 ```ruby
-	if (x % 2 == 0 && y % 2 == 0)
-	return whiteTileTexture;
-	else if (x % 2 == 1 && y % 2 == 0)
-	return blackTileTexture;
-	else if (x % 2 == 0 && y % 2 == 1)
-	return blackTileTexture;
-	else
-	return whiteTileTexture;
+if (x % 2 == 0 && y % 2 == 0)
+return whiteTileTexture;
+else if (x % 2 == 1 && y % 2 == 0)
+return blackTileTexture;
+else if (x % 2 == 0 && y % 2 == 1)
+return blackTileTexture;
+else
+return whiteTileTexture;
 ```
 
 	Depois do objeto criado e de termos as propriedades definidas, a função OnDraw(SpriteBatch spriteBatch) é chamada para desenhar os elementos no ecrã (actually displaying elements belongs to this function, that is called every frame of the game aka os elementos só são representados no ecrã quando esta função é chamada);
@@ -114,10 +114,10 @@ Por fim, há falta de comentários no próprio código, o que torna difícil per
 	Também é possível retornar depois do jogo dar por terminado.
 
 ```ruby
-	if (_gameManager.StateMachine.CurrentState is WaitingOnFinishedGame)
-	{
-	_gameManager.ReturnFromGameFinished();
-	}
+if (_gameManager.StateMachine.CurrentState is WaitingOnFinishedGame)
+{
+_gameManager.ReturnFromGameFinished();
+}
 ```
 
 **MoveManager.cs**
