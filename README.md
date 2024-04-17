@@ -40,9 +40,9 @@ Observações / Explicações / Comentários ao código -
 **Content folder:**
 Todos os pngs precisos para o jogo, incluindo o tabuleiro e peças, contém adicionalmente um folder com todas as fontes usadas no jogo 
 
-##Game Objects folder:##
+##Game Objects folder:
 
-##Board folder:##
+##Board folder:
 	**Chessboard.cs**
 
 	Usa a public const int BoardDimensions = 8 para dar set das dimensões do próprio tabuleiro, segue o standard 8x8;
