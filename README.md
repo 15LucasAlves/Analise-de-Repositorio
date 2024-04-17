@@ -24,7 +24,8 @@ Imagem disponibilizada pelo criador:
 
 ![preview](preview.png)
 
-**Análise do Projeto "Just Chess":**
+
+#Análise do Projeto "Just Chess":#
 
 Como o nome indica, é um projeto que envolve criar o jogo de tabuleiro xadrez em C# junto com a framework do MonoGame. O criador destaca também duas funcionalidades adicionadas que podem diferenciar o projeto do jogo de tabuleiro original, estas sendo a função de voltar e refazer a jogada, tal como poder guardar e carregar o estado do jogo, podendo voltar mais tarde para o terminar.
 
@@ -51,7 +52,7 @@ Todos os pngs precisos para o jogo, incluindo o tabuleiro e peças, contém adic
 	Usa o construtor  public ChessBoard() : base() para inicializar as tiles, pondo-as na posição correta dentro da chessboard edge texture;
 
 	A função protected override void OnLoad(MonoGameApp app) é chamada para dar load das texturas e aplicá-las nas tileboards, posicionando as corretamente:
-	```ruby
+```ruby
 	if (x % 2 == 0 && y % 2 == 0)
 	return whiteTileTexture;
 	else if (x % 2 == 1 && y % 2 == 0)
@@ -60,7 +61,7 @@ Todos os pngs precisos para o jogo, incluindo o tabuleiro e peças, contém adic
 	return blackTileTexture;
 	else
 	return whiteTileTexture;
-	```
+```
 
 	Depois do objeto criado e de termos as propriedades definidas, a função OnDraw(SpriteBatch spriteBatch) é chamada para desenhar os elementos no ecrã (actually displaying elements belongs to this function, that is called every frame of the game aka os elementos só são representados no ecrã quando esta função é chamada);
 
