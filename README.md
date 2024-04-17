@@ -101,15 +101,15 @@ Por fim, há falta de comentários no próprio código, o que torna difícil per
 
 **ICommand.cs**
 
-		Declara o método Execute e Undo.
+	Declara o método Execute e Undo.
 
 **Move.cs**
 
-		Declara o move, faz com que o novo move seja assumido e então por consequência haja overwrite dos dados da peça movida.
+	Declara o move, faz com que o novo move seja assumido e então por consequência haja overwrite dos dados da peça movida.
 
 **MoveCommand.cs**	
 
-		Aqui têm duas funções muito importantes que fazem atualizar ou desatualizar o estado da board, basicamente faz com que seja possível ver o move na board e da update as variáveis de jogo, turno, gamestate e atualiza o tint do tile e deseleciona a peça.
+	Aqui têm duas funções muito importantes que fazem atualizar ou desatualizar o estado da board, basicamente faz com que seja possível ver o move na board e da update as variáveis de jogo, turno, gamestate e atualiza o tint do tile e deseleciona a peça.
 	Faz o contrário para a outra função, que é reverter o estado um turno para traz.
 	Também é possível retornar depois do jogo dar por terminado.
 
@@ -122,20 +122,20 @@ Por fim, há falta de comentários no próprio código, o que torna difícil per
 
 **MoveManager.cs**
 
-		Utilizado para gerir a movimentação no jogo, utiliza desta forma um Stack para guardar os movimentos executados. Contém métodos para executar o movimento, undo and redo um movimento, e para limpar todos os movimentos no stack.
+	Utilizado para gerir a movimentação no jogo, utiliza desta forma um Stack para guardar os movimentos executados. Contém métodos para executar o movimento, undo and redo um movimento, e para limpar todos os movimentos no stack.
 
 **UndoRedoStack.cs**
 
-		Guarda o estado do último move e do último undo.
-		Dá clear nos moves.
-		Funções para ser possível dar undo e redo nas peças sem que elas se dupliquem e ou desapareçam.
+	Guarda o estado do último move e do último undo.
+	Dá clear nos moves.
+	Funções para ser possível dar undo e redo nas peças sem que elas se dupliquem e ou desapareçam.
 
 
 ## Save System folder:
 	
 **ChessSaveData.cs**
 		
-		Salva as coordenadas de todas as peças e insere-as numa lista
+	Salva as coordenadas de todas as peças e insere-as numa lista
 
 **ChessSaveManager.cs**
 
@@ -148,34 +148,34 @@ Por fim, há falta de comentários no próprio código, o que torna difícil per
 
 **MovingPiece.cs**
 
-			Adds/Removes Tints.
+	Adds/Removes Tints.
 
 **SelectingPiece.cs**
 	
-			Código Incompleto
+	Código Incompleto
 
 **WaitingOnFinishedGame.cs**
 			
-			Código Incompleto
+	Código Incompleto
 
 **ChessGameManagerState.cs**
 	
-		Get / Set game manager
+	Get / Set game manager
 
 **ChessGameManagerStateMachine.cs**
 
-		If “Game state != NULL” ele dá exit.
-		Creates a generic object “Game state”, and enters the class(?)	
+	If “Game state != NULL” ele dá exit.
+	Creates a generic object “Game state”, and enters the class(?)	
 
 	
 **State.cs**
 
-		Has a state class.
+	Has a state abstract class.
 
 
 **StateMachine.cs**
 
-		Set States.
+	Set States.
 	
 
 ### Properties/AssemblyInfo.cs
@@ -187,12 +187,12 @@ Por fim, há falta de comentários no próprio código, o que torna difícil per
 
 **SceneMainMenu.cs**
 		
-		Create the Main menu background and adds the “Play”, “Load” ,“Quit” buttons. Makes it possible to click the buttons.
+	Create the Main menu background and adds the “Play”, “Load” ,“Quit” buttons. Makes it possible to click the buttons.
 
 **ScenePlay.cs**
 	
-		Create the Game background as well as add some buttons and other important trackers / Labels. Makes it possible to click all the buttons.
-		Shows the end game labels, “White Wins”, “Black Wins” and “Tie”.
+	Creates the Game background as well as add some buttons and other important trackers/labels. Makes it possible to click all the buttons.
+	Shows the end game labels, “White Wins”, “Black Wins” and “Tie”.
 
 ## TurnSystem folder:
 
