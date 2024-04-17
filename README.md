@@ -27,12 +27,15 @@ Imagem disponibilizada pelo criador:
 
 # Análise do Projeto "Just Chess":
 
+<p style="text-align: justify;">
+	
 Como o nome indica, é um projeto que envolve criar o jogo de tabuleiro xadrez em C# junto com a framework do MonoGame. O criador destaca também duas funcionalidades adicionadas que podem diferenciar o projeto do jogo de tabuleiro original, estas sendo a função de voltar e refazer a jogada, tal como poder guardar e carregar o estado do jogo, podendo voltar mais tarde para o terminar.
 
 O projeto aparenta estar funcional (não conseguimos testar devido ao sistema operativo, mas no video disponibilizado pelo criador ele demonstra como funciona o jogo), no entanto, observam-se alguns problemas com as nomenclaturas dos ficheiros, criando um pouco de confusão, havendo vezes em que é necessário adivinhar o conteúdo do ficheiro. Além disso, a organização geral dos mesmos deixa a desejar, pois as pastas que contêm os ficheiros não sugerem nada em concreto para se conseguir antecipar o seu conteúdo.
 
 Por fim, há falta de comentários no próprio código, o que torna difícil perceber o que o criador fez sem ter o input do mesmo sobre o que estava a tentar obter com as funções criadas e até mesmo o que às vezes estava a pensar para que serviriam as mesmas. Observa-se também que até o ReadMe encontra-se um pouco vazio para um projeto com tantos passos e ficheiros.
 
+</p>
 
 
 # Observações / Explicações / Comentários ao código
