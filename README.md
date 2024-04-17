@@ -25,7 +25,7 @@ Imagem disponibilizada pelo criador:
 ![preview](preview.png)
 
 
-#Análise do Projeto "Just Chess":#
+# Análise do Projeto "Just Chess":
 
 Como o nome indica, é um projeto que envolve criar o jogo de tabuleiro xadrez em C# junto com a framework do MonoGame. O criador destaca também duas funcionalidades adicionadas que podem diferenciar o projeto do jogo de tabuleiro original, estas sendo a função de voltar e refazer a jogada, tal como poder guardar e carregar o estado do jogo, podendo voltar mais tarde para o terminar.
 
@@ -110,110 +110,110 @@ Todos os pngs precisos para o jogo, incluindo o tabuleiro e peças, contém adic
 	Também é possível retornar depois do jogo dar por terminado.
 
 ```ruby
-if (_gameManager.StateMachine.CurrentState is WaitingOnFinishedGame)
-{
-_gameManager.ReturnFromGameFinished();
-}
+	if (_gameManager.StateMachine.CurrentState is WaitingOnFinishedGame)
+	{
+	_gameManager.ReturnFromGameFinished();
+	}
 ```
 
-	**MoveManager.cs**
+**MoveManager.cs**
 
 		Utilizado para gerir a movimentação no jogo, utiliza desta forma um Stack para guardar os movimentos executados. Contém métodos para executar o movimento, undo and redo um movimento, e para limpar todos os movimentos no stack.
 
-	**UndoRedoStack.cs**
+**UndoRedoStack.cs**
 
 		Guarda o estado do último move e do último undo.
 		Dá clear nos moves.
 		Funções para ser possível dar undo e redo nas peças sem que elas se dupliquem e ou desapareçam.
 
 
-##Save System folder:##
+## Save System folder:
 	
-	**ChessSaveData.cs**
+**ChessSaveData.cs**
 		
 		Salva as coordenadas de todas as peças e insere-as numa lista
 
-	**ChessSaveManager.cs**
+**ChessSaveManager.cs**
 
 	Cria ficheiro binário na path desejada e armazena as variáveis necessárias para o reinício do jogo.
 
 	
-##StateSystem folder:##
+## StateSystem folder:
 
-	###States folder:###
+### States folder:
 
-		**MovingPiece.cs**
+**MovingPiece.cs**
 
 			Adds/Removes Tints.
 
-		**SelectingPiece.cs**
+**SelectingPiece.cs**
 	
 			Código Incompleto
 
-		**WaitingOnFinishedGame.cs**
+**WaitingOnFinishedGame.cs**
 			
 			Código Incompleto
 
-	**ChessGameManagerState.cs**
+**ChessGameManagerState.cs**
 	
 		Get / Set game manager
 
-	**ChessGameManagerStateMachine.cs**
+**ChessGameManagerStateMachine.cs**
 
 		If “Game state != NULL” ele dá exit.
 		Creates a generic object “Game state”, and enters the class(?)	
 
 	
-	**State.cs**
+**State.cs**
 
 		Has a state class.
 
 
-	**StateMachine.cs**
+**StateMachine.cs**
 
 		Set States.
 	
 
-###Properties/AssemblyInfo.cs###
+### Properties/AssemblyInfo.cs
 
 	Assembly code, não foi criado pelo o utilizador.
 
 
-##Scenes folder:##
+## Scenes folder:
 
-	**SceneMainMenu.cs**
+**SceneMainMenu.cs**
 		
 		Create the Main menu background and adds the “Play”, “Load” ,“Quit” buttons. Makes it possible to click the buttons.
 
-	**ScenePlay.cs**
+**ScenePlay.cs**
 	
 		Create the Game background as well as add some buttons and other important trackers / Labels. Makes it possible to click all the buttons.
 		Shows the end game labels, “White Wins”, “Black Wins” and “Tie”.
 
-##TurnSystem folder:##
+## TurnSystem folder:
 
-	**TurnManager.cs**
+**TurnManager.cs**
 
 		Código para definir turnos, e a vez de quem joga. E guarda também o turno anterior caso seja para voltar. No caso de carregamento de um jogo, da set no turno em que estava anteriormente.
 
-##Ficheiros fora de folders:##
+## Ficheiros fora de folders:
 
-	**ChessGame.cs**
+**ChessGame.cs**
 
 		Inicializa algumas cores, deixa o mouse visível e certifica-se que o jogo inicia na cena do “ Main Menu”, Também cria uma emergency exit no escape key 
 
-		```ruby
+```ruby
 		// Emergency exit on ESC key
             	if (MonoGameEngine.Keyboard.IsKeyUp(Keys.Escape))
             	{
                 AppManager.StopApp() }
-		```
+```
 
-	**ChessGameManager.cs**
+**ChessGameManager.cs**
 	
 		Neste ficheiro ele trata de tudo o que é relacionado com o jogo, regras de movimento, verificações de início / término de jogo, desfazer e refazer ações, criar as peças e localizá-las. Também tem a função para um player poder desistir da partida. Existe uma função para mostrar os moves possíveis que não deixariam o próprio jogador em cheque. Por último, ele guarda o estado do jogo num ficheiro binário.
  
 
-	**Program.cs**
+**Program.cs**
 
 		Início da aplicação. (ficheiro a correr caso possível testar o jogo)
