@@ -40,10 +40,11 @@ Observações / Explicações / Comentários ao código -
 **Content folder:**
 Todos os pngs precisos para o jogo, incluindo o tabuleiro e peças, contém adicionalmente um folder com todas as fontes usadas no jogo 
 
-##Game Objects folder:
+## Game Objects folder:
 
-##Board folder:
-	**Chessboard.cs**
+### Board folder:
+
+**Chessboard.cs**
 
 	Usa a public const int BoardDimensions = 8 para dar set das dimensões do próprio tabuleiro, segue o standard 8x8;
 
@@ -72,7 +73,7 @@ Todos os pngs precisos para o jogo, incluindo o tabuleiro e peças, contém adic
 
 	Define a classe Tileboard, definindo as suas propriedades, como dimensões; calcula a distância entre as tiles e verifica se uma tile está em risco, tendo uma função que devolve um bool, public bool IsTileThreatened(Tile tileBeingChecked, Team pieceTeam), e outra que devolve as peças que puseram essa tile em risco, public bool IsTileThreatened(Tile tileBeingChecked, Team pieceTeam, out IEnumerable<Piece> threateningPieces).
 
-##Pieces folder:##
+### Pieces folder:
 	
 	Contém um script para cada peça de xadrez específica, de modo a estabelecer as regras para cada tipo de peça, sendo assim possível, analisar posteriormente no ficheiro Piece.cs, o uso desses mesmos scripts consoante a peça identificada.
 
@@ -85,34 +86,34 @@ Todos os pngs precisos para o jogo, incluindo o tabuleiro e peças, contém adic
 	Define uma classe abstracta para as peças do jogo, incluindo as propriedades da equipa à qual pertence, e posição no tabuleiro. Utiliza um enum para definir as equipas em jogo, ​​public enum Team { White, Black }. Estabelece um método para verificar se a peça já foi movida ou não, através de um bool, e outra de forma a obter os movimentos que são possíveis a partir de uma posição específica para a peça específica. Inclui ainda funções para verificar a equipa a que pertence uma peça, public bool IsDifferentTeam(Piece piece), uma função para verificar se uma jogada é possível, public virtual bool IsPossibleMove(Tile tile).
 
 
-##MonoGameEngine folder:##
+## MonoGameEngine folder:
 
 	Contém pastas para o framework criado pelo autor do repositório.
 
 
 
-##MoveSystem folder:##
+## MoveSystem folder:
 
-	**ICommand.cs**
+**ICommand.cs**
 
 		Declara o método Execute e Undo.
 
-	**Move.cs**
+**Move.cs**
 
 		Declara o move, faz com que o novo move seja assumido e então por consequência haja overwrite dos dados da peça movida.
 
-	**MoveCommand.cs**	
+**MoveCommand.cs**	
 
 		Aqui têm duas funções muito importantes que fazem atualizar ou desatualizar o estado da board, basicamente faz com que seja possível ver o move na board e da update as variáveis de jogo, turno, gamestate e atualiza o tint do tile e deseleciona a peça.
 	Faz o contrário para a outra função, que é reverter o estado um turno para traz.
 	Também é possível retornar depois do jogo dar por terminado.
 
-	```ruby
-            if (_gameManager.StateMachine.CurrentState is WaitingOnFinishedGame)
-            {
-                _gameManager.ReturnFromGameFinished();
-            }
-	```
+```ruby
+if (_gameManager.StateMachine.CurrentState is WaitingOnFinishedGame)
+{
+_gameManager.ReturnFromGameFinished();
+}
+```
 
 	**MoveManager.cs**
 
