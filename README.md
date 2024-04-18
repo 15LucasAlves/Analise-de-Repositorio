@@ -193,14 +193,53 @@ public void Save(string path)
 **SelectingPiece.cs**
 	
 	Código aparenta estar incompleto, uma das possíveis razões é que o criador poderá não querer disponibilizar o código por completo.
+ 
+ ```ruby
+class SelectingPiece : ChessGameManagerState
+    {
+        public override void Enter()
+        {
+
+        }
+
+        public override void Exit()
+        {
+
+        }
+
+        public override void Update(GameTime gameTime)
+        {
+
+        }
+    }
+```
 
 **WaitingOnFinishedGame.cs**
 			
 	Código Incompleto, uma das possíveis razões é que o criador poderá não querer disponibilizar o código por completo.
 
+ ```ruby
+ class WaitingOnFinishedGame : ChessGameManagerState
+    {
+        public override void Enter()
+        {
+
+        }
+
+        public override void Exit()
+        {
+
+        }
+
+        public override void Update(GameTime gameTime)
+        {
+
+        }
+```
+
 **ChessGameManagerState.cs**
 	
-	Get / Set game manager
+	Get/Set game manager.
 
 **ChessGameManagerStateMachine.cs**
 
