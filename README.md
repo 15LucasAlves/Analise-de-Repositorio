@@ -95,7 +95,8 @@ return whiteTileTexture;
 
 ## MonoGameEngine folder:
 
-	Contém pastas para o framework criado pelo autor do repositório.
+	Contém pastas e ficheiros para o framework criado pelo autor do repositório.
+ 	Ele refez certas funcionalidades para melhor acomudar a jogabilidade.
 
 
 
