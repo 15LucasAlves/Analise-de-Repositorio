@@ -288,7 +288,10 @@ AppManager.StopApp() }
 
 **ChessGameManager.cs**
 	
-	Neste ficheiro ele trata de tudo o que é relacionado com o jogo, regras de movimento, verificações de início / término de jogo, desfazer e refazer ações, criar as peças e localizá-las. Também tem a função para um player poder desistir da partida. Existe uma função para mostrar os moves possíveis que não deixariam o próprio jogador em cheque. Por último, ele guarda o estado do jogo num ficheiro binário.
+	Neste ficheiro ele trata de tudo o que é relacionado com o jogo, regras de movimento, verificações de início / término de jogo, desfazer e refazer ações, criar as peças e localizá-las. 
+ 	Também tem a função para um player poder desistir da partida. 
+  	Existe uma função para mostrar os moves possíveis que não deixariam o próprio jogador em cheque. 
+   	Por último, ele guarda o estado do jogo num ficheiro binário.
  
 
 **Program.cs**
