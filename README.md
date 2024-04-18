@@ -135,12 +135,49 @@ _gameManager.ReturnFromGameFinished();
 	
 **ChessSaveData.cs**
 		
-	Salva as coordenadas de todas as peças e insere-as numa lista
+	Salva as coordenadas de todas as peças e insere-as numa lista.
+
+ ```ruby
+public ChessSaveData(IEnumerable<Move> moves)
+        {
+            List<Move> listOfMoves = new List<Move>(moves);
+
+            movesCount = listOfMoves.Count;
+            fromCoordinates = new int[listOfMoves.Count][];
+            toCoordinates = new int[listOfMoves.Count][];
+
+            for(int i = 0; i < movesCount; i++)
+            {
+                Point fromCoordinate = listOfMoves[i].from.ToCoordinate();
+                Point toCoordinate = listOfMoves[i].to.ToCoordinate();
+
+                fromCoordinates[i] = new int[2];
+                fromCoordinates[i][0] = fromCoordinate.X;
+                fromCoordinates[i][1] = fromCoordinate.Y;
+
+                toCoordinates[i] = new int[2];
+                toCoordinates[i][0] = toCoordinate.X;
+                toCoordinates[i][1] = toCoordinate.Y;
+
+            }
+```
 
 **ChessSaveManager.cs**
 
 	Cria ficheiro binário na path desejada e armazena as variáveis necessárias para o reinício do jogo.
+ 
+```ruby
+public void Save(string path)
+        {
+            BinaryFormatter formatter = new BinaryFormatter();
+            FileStream stream = new FileStream(path, FileMode.Create);
 
+            ChessSaveData data = new ChessSaveData(_gameManager.MoveManager.GetMovesSnapshot());
+
+            formatter.Serialize(stream, data);
+            stream.Close();
+        }
+```
 	
 ## StateSystem folder:
 
@@ -148,15 +185,15 @@ _gameManager.ReturnFromGameFinished();
 
 **MovingPiece.cs**
 
-	Adds/Removes Tints.
+	Adds/Removes tints.
 
 **SelectingPiece.cs**
 	
-	Código Incompleto
+	Código aparenta estar incompleto, uma das possíveis razões é que o criador poderá não querer disponibilizar o código por completo.
 
 **WaitingOnFinishedGame.cs**
 			
-	Código Incompleto
+	Código Incompleto, uma das possíveis razões é que o criador poderá não querer disponibilizar o código por completo.
 
 **ChessGameManagerState.cs**
 	
@@ -170,14 +207,50 @@ _gameManager.ReturnFromGameFinished();
 	
 **State.cs**
 
-	Has a state abstract class.
+	Has a state abstract class that calls part of the code that are currently incomplete.
 
+```ruby
+namespace Chess
+{
+    abstract class State
+    {
+        public abstract void Enter();
+        public abstract void Update(GameTime gameTime);
+        public abstract void Exit();
+    }
+}
+```
 
 **StateMachine.cs**
 
 	Set States.
-	
+ 
+ ```ruby
+namespace Chess
+{
+    class StateMachine
+    {
+        public State CurrentState { get; protected set; }
 
+        public void SetState<T>() where T : State, new()
+        {
+            if (CurrentState != null)
+            {
+                CurrentState.Exit();
+            }
+
+            CurrentState = new T();
+            CurrentState.Enter();
+        }
+
+        public void Update(GameTime gameTime)
+        {
+            CurrentState?.Update(gameTime);
+        }
+    }
+}
+```
+	
 ### Properties/AssemblyInfo.cs
 
 	Assembly code, não foi criado pelo o utilizador.
