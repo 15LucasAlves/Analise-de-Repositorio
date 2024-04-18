@@ -52,10 +52,9 @@ Por fim, há falta de comentários no próprio código, o que torna difícil per
 **Chessboard.cs**
 
 	Usa a public const int BoardDimensions = 8 para dar set das dimensões do próprio tabuleiro, segue o standard 8x8;
-
 	Usa o construtor  public ChessBoard() : base() para inicializar as tiles, pondo-as na posição correta dentro da chessboard edge texture;
-
 	A função protected override void OnLoad(MonoGameApp app) é chamada para dar load das texturas e aplicá-las nas tileboards, posicionando as corretamente:
+ 
 ```ruby
 if (x % 2 == 0 && y % 2 == 0)
 return whiteTileTexture;
@@ -67,7 +66,7 @@ else
 return whiteTileTexture;
 ```
 
-	Depois do objeto criado e de termos as propriedades definidas, a função OnDraw(SpriteBatch spriteBatch) é chamada para desenhar os elementos no ecrã (actually displaying elements belongs to this function, that is called every frame of the game aka os elementos só são representados no ecrã quando esta função é chamada);
+	Depois do objeto criado e de termos as propriedades definidas, a função OnDraw(SpriteBatch spriteBatch) é chamada para desenhar os elementos no ecrã (actually displaying elements belongs to this function, that is called every frame of the game aka os elementos só são representados no ecrã quando esta função é chamada).
 
 
 **Tile.cs**
@@ -88,7 +87,10 @@ return whiteTileTexture;
 	
 **Piece.cs:**
 		
-	Define uma classe abstracta para as peças do jogo, incluindo as propriedades da equipa à qual pertence, e posição no tabuleiro. Utiliza um enum para definir as equipas em jogo, ​​public enum Team { White, Black }. Estabelece um método para verificar se a peça já foi movida ou não, através de um bool, e outra de forma a obter os movimentos que são possíveis a partir de uma posição específica para a peça específica. Inclui ainda funções para verificar a equipa a que pertence uma peça, public bool IsDifferentTeam(Piece piece), uma função para verificar se uma jogada é possível, public virtual bool IsPossibleMove(Tile tile).
+	Define uma classe abstracta para as peças do jogo, incluindo as propriedades da equipa à qual pertence, e posição no tabuleiro. 
+ 	Utiliza um enum para definir as equipas em jogo, ​​public enum Team { White, Black }. 
+  	Estabelece um método para verificar se a peça já foi movida ou não, através de um bool, e outra de forma a obter os movimentos que são possíveis a partir de uma posição específica para a peça específica. 
+   	Inclui ainda funções para verificar a equipa a que pertence uma peça, public bool IsDifferentTeam(Piece piece), uma função para verificar se uma jogada é possível, public virtual bool IsPossibleMove(Tile tile).
 
 
 ## MonoGameEngine folder:
@@ -122,7 +124,8 @@ _gameManager.ReturnFromGameFinished();
 
 **MoveManager.cs**
 
-	Utilizado para gerir a movimentação no jogo, utiliza desta forma um Stack para guardar os movimentos executados. Contém métodos para executar o movimento, undo and redo um movimento, e para limpar todos os movimentos no stack.
+	Utilizado para gerir a movimentação no jogo, utiliza desta forma um Stack para guardar os movimentos executados. 
+ 	Contém métodos para executar o movimento, undo and redo um movimento, e para limpar todos os movimentos no stack.
 
 **UndoRedoStack.cs**
 
@@ -207,8 +210,8 @@ public void Save(string path)
 	
 **State.cs**
 
-	Has a state abstract class that calls part of the code that are currently incomplete.
-
+	Contém uma state abstract class que chama partes do código que se encontram incompletas.
+ 
 ```ruby
 namespace Chess
 {
@@ -260,24 +263,26 @@ namespace Chess
 
 **SceneMainMenu.cs**
 		
-	Create the Main menu background and adds the “Play”, “Load” ,“Quit” buttons. Makes it possible to click the buttons.
+	Cria o background principal e adiciona butões de “Play”, “Load” e “Quit”. Torna possível clicar no butões anteriormente mencionados.
 
 **ScenePlay.cs**
 	
-	Creates the Game background as well as add some buttons and other important trackers/labels. Makes it possible to click all the buttons.
-	Shows the end game labels, “White Wins”, “Black Wins” and “Tie”.
+	Cria o background do jogo e adiciona butões e trackers/labels importantes. Torna possível clicar no butões anteriormente mencionados.
+	Mostra as end game labels, “White Wins”, “Black Wins” e “Tie”.
 
 ## TurnSystem folder:
 
 **TurnManager.cs**
 
-	Código para definir turnos, e a vez de quem joga. E guarda também o turno anterior caso seja para voltar. No caso de carregamento de um jogo, da set no turno em que estava anteriormente.
+	Código para definir turnos, e a vez de quem joga. E guarda também o turno anterior caso seja para voltar.
+ 	No caso de carregamento de um jogo, da set no turno em que estava anteriormente.
 
 ## Ficheiros fora de folders:
 
 **ChessGame.cs**
 
-	Inicializa algumas cores, deixa o mouse visível e certifica-se que o jogo inicia na cena do “ Main Menu”, Também cria uma emergency exit no escape key 
+	Inicializa algumas cores, deixa o mouse visível e certifica-se que o jogo inicia na cena do “ Main Menu”.
+ 	Também cria uma emergency exit no escape key.
 
 ```ruby
 // Emergency exit on ESC key
