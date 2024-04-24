@@ -66,7 +66,7 @@ else
 return whiteTileTexture;
 ```
 
-	Depois do objeto criado e de termos as propriedades definidas, a função OnDraw(SpriteBatch spriteBatch) é chamada para desenhar os elementos no ecrã (actually displaying elements belongs to this function, that is called every frame of the game aka os elementos só são representados no ecrã quando esta função é chamada).
+	Depois do objeto criado e de termos as propriedades definidas, a função OnDraw(SpriteBatch spriteBatch) é chamada para desenhar os elementos no ecrã (actually displaying elements belongs to this function, isto é chamado em todos os frames do jogo, ou seja, os elementos só são representados no ecrã quando esta função é chamada).
 
 
 **Tile.cs**
@@ -104,7 +104,7 @@ return whiteTileTexture;
 
 **ICommand.cs**
 
-	Declara o método Execute e Undo.
+	Chama o método Execute e Undo.
 
 **Move.cs**
 
@@ -114,7 +114,7 @@ return whiteTileTexture;
 
 	Aqui têm duas funções muito importantes que fazem atualizar ou desatualizar o estado da board, basicamente faz com que seja possível ver o move na board e da update as variáveis de jogo, turno, gamestate e atualiza o tint do tile e deseleciona a peça.
 	Faz o contrário para a outra função, que é reverter o estado um turno para traz.
-	Também é possível retornar depois do jogo dar por terminado.
+	Também é possível retornar depois do jogo se dar por terminado.
 
 ```ruby
 if (_gameManager.StateMachine.CurrentState is WaitingOnFinishedGame)
@@ -303,11 +303,11 @@ namespace Chess
 
 **SceneMainMenu.cs**
 		
-	Cria o background principal e adiciona butões de “Play”, “Load” e “Quit”. Torna possível clicar no butões anteriormente mencionados.
+	Cria o background principal e adiciona botões de “Play”, “Load” e “Quit”. Torna possível clicar no botões anteriormente mencionados.
 
 **ScenePlay.cs**
 	
-	Cria o background do jogo e adiciona butões e trackers/labels importantes. Torna possível clicar no butões anteriormente mencionados.
+	Cria o background do jogo e adiciona botões e trackers/labels importantes. Torna possível clicar no botões anteriormente mencionados.
 	Mostra as end game labels, “White Wins”, “Black Wins” e “Tie”.
 
 ## TurnSystem folder:
@@ -333,7 +333,7 @@ AppManager.StopApp() }
 
 **ChessGameManager.cs**
 	
-	Neste ficheiro ele trata de tudo o que é relacionado com o jogo, regras de movimento, verificações de início / término de jogo, desfazer e refazer ações, criar as peças e localizá-las. 
+	Neste ficheiro ele trata de tudo o que é relacionado com o jogo, regras de movimento, verificações de início/término de jogo, desfazer e refazer ações, criar as peças e localizá-las. 
  	Também tem a função para um player poder desistir da partida. 
   	Existe uma função para mostrar os moves possíveis que não deixariam o próprio jogador em cheque. 
    	Por último, ele guarda o estado do jogo num ficheiro binário.
